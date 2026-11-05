@@ -1,0 +1,285 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Ek chitthi</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Kalam:wght@400;700&display=swap" rel="stylesheet">
+<style>
+  :root{ --ink:#35200f; --ok:#245c33; --no:#9c2a22; --hand:"Kalam","Segoe Print","Bradley Hand",cursive; }
+  *{box-sizing:border-box}
+  body{
+    margin:0; min-height:100vh; display:flex; align-items:center; justify-content:center; padding:22px;
+    background:#3a2417 url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='220' height='220'%3E%3Cfilter id='w'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.012 .5' numOctaves='3' seed='4'/%3E%3CfeColorMatrix values='0 0 0 0 .12 0 0 0 0 .07 0 0 0 0 .03 0 0 0 .55 0'/%3E%3C/filter%3E%3Crect width='220' height='220' filter='url(%23w)'/%3E%3C/svg%3E");
+    font-family:var(--hand); color:var(--ink);
+  }
+  .stage{width:100%; max-width:500px; perspective:1500px}
+
+  .paper{
+    background-color:#e6c78c;
+    background-image:
+      url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='300'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.045' numOctaves='5' seed='9'/%3E%3CfeColorMatrix values='0 0 0 0 .45 0 0 0 0 .27 0 0 0 0 .08 0 0 0 .5 0'/%3E%3C/filter%3E%3Crect width='300' height='300' filter='url(%23n)'/%3E%3C/svg%3E"),
+      radial-gradient(ellipse at 30% 20%,rgba(255,245,210,.65),transparent 60%),
+      radial-gradient(ellipse at 50% 50%,transparent 45%,rgba(120,65,15,.5) 100%);
+    filter:drop-shadow(0 14px 22px rgba(0,0,0,.6));
+  }
+
+  /* closed, folded */
+  .folded{
+    display:block; position:relative; width:76%; max-width:320px; aspect-ratio:3/4; margin:0 auto;
+    border:0; padding:0; cursor:pointer; transform:rotate(-1.5deg);
+    clip-path:polygon(1% 2%,12% 0,30% 1.5%,47% 0,66% 1%,83% 0,99% 2%,100% 20%,98.5% 41%,100% 62%,99% 83%,100% 98%,82% 99.5%,61% 98.5%,40% 100%,18% 98.8%,0 100%,1.5% 78%,0 56%,1.5% 33%,0 14%);
+    transition:transform .9s ease, opacity .7s ease; transform-origin:50% 100%;
+  }
+  .folded::before{
+    content:""; position:absolute; inset:0;
+    background:
+      linear-gradient(180deg,transparent 32%,rgba(70,35,8,.4) 33.2%,rgba(255,238,195,.55) 34.2%,transparent 36%),
+      linear-gradient(180deg,transparent 65%,rgba(70,35,8,.4) 66.4%,rgba(255,238,195,.55) 67.4%,transparent 69%);
+  }
+  .folded:hover{transform:rotate(0) translateY(-5px)}
+  .seal{
+    position:absolute; left:50%; top:50%; width:78px; height:74px; margin:-37px 0 0 -39px;
+    border-radius:52% 48% 55% 45% / 48% 55% 45% 52%; background:radial-gradient(circle at 38% 32%,#b8322c,#6e1512 75%);
+    box-shadow:0 3px 7px rgba(0,0,0,.55), inset 0 -3px 6px rgba(0,0,0,.35), inset 0 2px 3px rgba(255,150,140,.35);
+    display:grid; place-items:center; color:rgba(255,200,190,.75); font:700 30px/1 var(--hand);
+  }
+  .hint{position:absolute; left:0; right:0; bottom:8%; text-align:center; font-size:17px}
+  .stage.open .folded{display:none}
+
+  /* opened */
+  .sheet{
+    display:none; position:relative; padding:38px 30px 26px; transform-origin:top center;
+    clip-path:polygon(0 1%,9% 0,24% .8%,41% 0,58% .9%,76% 0,91% .7%,100% 0,99.2% 12%,100% 27%,99% 44%,100% 61%,99.3% 78%,100% 100%,84% 99.3%,66% 100%,47% 99.2%,29% 100%,12% 99.4%,0 100%,.8% 82%,0 63%,.9% 45%,0 26%,.7% 11%);
+  }
+  .stage.open .sheet{display:block; animation:unfold .9s cubic-bezier(.2,.8,.25,1) both}
+  @keyframes unfold{from{transform:rotateX(-85deg);opacity:0}to{transform:none;opacity:1}}
+
+  #letter{font-size:21px; line-height:1.75; min-height:220px}
+  #letter p{margin:0 0 10px}
+  #letter .sign{text-align:right}
+
+  .stamp-row{display:flex; align-items:center; justify-content:space-between; gap:10px; margin-top:20px}
+  .stamp{
+    width:88px; height:88px; flex:none; border-radius:50%; display:grid; place-items:center; text-align:center;
+    border:3px solid currentColor; box-shadow:inset 0 0 0 4px transparent, inset 0 0 0 6px currentColor;
+    font:700 12px/1.1 Georgia,serif; letter-spacing:.06em; cursor:grab; user-select:none; touch-action:none;
+    transform:rotate(-9deg); mix-blend-mode:multiply; opacity:.92;
+  }
+  .stamp b{display:block; font-size:26px; font-family:Georgia,serif}
+  .stamp.ok{color:var(--ok)} .stamp.no{color:var(--no); transform:rotate(8deg)}
+  .drop{
+    flex:1; min-height:112px; border:2px dashed rgba(53,32,15,.5); border-radius:4px 9px 5px 8px;
+    display:grid; place-items:center; text-align:center; font-size:15px; padding:6px;
+  }
+  .drop.over{background:rgba(110,60,15,.15)}
+  .drop .placed{width:96px; height:96px; cursor:pointer; animation:thud .3s ease-out}
+  @keyframes thud{from{transform:scale(1.9) rotate(-25deg); opacity:0}}
+  .ghost{position:fixed; z-index:99; pointer-events:none; transform:translate(-50%,-50%) rotate(-9deg); opacity:.85}
+
+  .send{
+    display:block; width:100%; margin-top:20px; padding:13px; border:2px solid var(--ink); border-radius:6px 10px 7px 9px;
+    background:var(--ink); color:#f3dfb0; font:700 19px var(--hand); cursor:pointer;
+  }
+  .send:disabled{opacity:.4; cursor:not-allowed}
+  .msg{text-align:center; font-size:15px; margin-top:8px; min-height:22px}
+
+  @media (max-width:420px){
+    .sheet{padding:30px 20px 22px} #letter{font-size:18px}
+    .stamp{width:72px; height:72px; font-size:10px} .stamp b{font-size:20px} .drop .placed{width:80px; height:80px}
+  }
+  @media (prefers-reduced-motion:reduce){*{animation:none!important; transition:none!important}}
+</style>
+</head>
+<body>
+<div class="stage" id="stage">
+
+  <button class="folded paper" id="folded" aria-label="Chitthi kholo">
+    <span class="seal">S</span>
+    <span class="hint">Click on this </span>
+  </button>
+
+  <div class="sheet paper" id="sheet">
+
+    <!-- ===== LETTER YAHAN LIKHNA: sirf <div id="letter"> ke andar <p> me likho ===== -->
+    <div id="letter">
+      <p>Meri jaan,</p>
+      <p>I know mana bohot hurt kiya ha aap ko sorry i know mana kisi or ka gusa aap par kiya and sach bolu to us din mara bhai sa mari ladai ho rakhi thi morning sa is liya gusa tha mai or sara gusa aap par kar diya i am sorry </p>
+      <p>but sach mai mai hamasa aap ki izat karta hu and i know mari tone achi nhi thi i promise mai hamasa dhyan rakhu ga iska trust me pls mujha maaf kar do plssssssss</p>
+      <p class="sign">Love youu 🥹</p>
+    </div>
+    <!-- ===== LETTER END ===== -->
+
+    <div class="stamp-row">
+      <div class="stamp ok" data-stamp="APPROVED"><span><b>&#10004;</b>APPROVED</span></div>
+      <div class="drop" id="drop">Stamp yahan lagao</div>
+      <div class="stamp no" data-stamp="REJECT"><span><b>&#10006;</b>REJECT</span></div>
+    </div>
+
+    <button class="send" id="send" disabled>Send ✈️</button>
+    <div class="msg" id="msg"> Aprove or Reject</div>
+  </div>
+</div>
+
+<script>
+  // Sirf tab kaam aata hai jab share sheet na khule (laptop): tab image download hoti hai aur is number ki chat khulti hai.
+  const PHONE = "";   // example: "919876543210" (country code ke saath, bina +)
+
+  const stage = document.getElementById('stage');
+  const drop = document.getElementById('drop');
+  const sendBtn = document.getElementById('send');
+  const msg = document.getElementById('msg');
+  const EMPTY = 'Stamp yahan lagao';
+  let chosen = null;
+
+  document.getElementById('folded').onclick = () => stage.classList.add('open');
+
+  function place(el){
+    chosen = el.dataset.stamp;
+    drop.innerHTML = '';
+    const c = el.cloneNode(true);
+    c.classList.add('placed'); c.style.cursor = 'pointer'; c.title = 'hatane ke liye chhuo';
+    c.onclick = clear;
+    drop.appendChild(c);
+    sendBtn.disabled = false;
+    msg.textContent = chosen === 'APPROVED' ? 'Approved' : 'Reject';
+  }
+  function clear(){ chosen = null; drop.textContent = EMPTY; sendBtn.disabled = true; msg.textContent = 'pehle ek stamp chuno'; }
+
+  const inDrop = (x, y) => { const r = drop.getBoundingClientRect(); return x > r.left && x < r.right && y > r.top && y < r.bottom; };
+
+  document.querySelectorAll('.stamp').forEach(st => {
+    st.addEventListener('pointerdown', e => {
+      e.preventDefault();
+      let moved = false, ghost = null; const sx = e.clientX, sy = e.clientY;
+      const move = ev => {
+        if (!moved && Math.hypot(ev.clientX - sx, ev.clientY - sy) < 6) return;
+        moved = true;
+        if (!ghost){ ghost = st.cloneNode(true); ghost.classList.add('ghost'); document.body.appendChild(ghost); }
+        ghost.style.left = ev.clientX + 'px'; ghost.style.top = ev.clientY + 'px';
+        drop.classList.toggle('over', inDrop(ev.clientX, ev.clientY));
+      };
+      const up = ev => {
+        removeEventListener('pointermove', move); removeEventListener('pointerup', up);
+        if (ghost) ghost.remove(); drop.classList.remove('over');
+        if (!moved || inDrop(ev.clientX, ev.clientY)) place(st);
+      };
+      addEventListener('pointermove', move); addEventListener('pointerup', up);
+    });
+  });
+
+  /* ---------- Letter + stamp ko image me banana (canvas) ---------- */
+  function rand(seed){ let s = seed; return () => (s = (s * 16807) % 2147483647) / 2147483647; }
+
+  function drawStamp(kind){
+    const S = 360, c = document.createElement('canvas'); c.width = c.height = S;
+    const x = c.getContext('2d'), col = kind === 'APPROVED' ? '#245c33' : '#9c2a22', m = S / 2;
+    x.strokeStyle = col; x.fillStyle = col; x.lineCap = 'round';
+    x.lineWidth = 14; x.beginPath(); x.arc(m, m, 165, 0, 7); x.stroke();
+    x.lineWidth = 5;  x.beginPath(); x.arc(m, m, 138, 0, 7); x.stroke();
+    x.lineWidth = 22; x.beginPath();
+    if (kind === 'APPROVED'){ x.moveTo(m - 55, m - 30); x.lineTo(m - 18, m + 8); x.lineTo(m + 58, m - 62); }
+    else { x.moveTo(m - 45, m - 70); x.lineTo(m + 45, m + 20); x.moveTo(m + 45, m - 70); x.lineTo(m - 45, m + 20); }
+    x.stroke();
+    x.font = 'bold 46px Georgia, serif'; x.textAlign = 'center'; x.textBaseline = 'middle';
+    x.fillText(kind, m, m + 82);
+    // rough ink: random chips taken out
+    const r = rand(7); x.globalCompositeOperation = 'destination-out';
+    for (let i = 0; i < 1400; i++){ x.globalAlpha = .25 + r() * .6; x.beginPath(); x.arc(r() * S, r() * S, r() * 3.2 + .4, 0, 7); x.fill(); }
+    return c;
+  }
+
+  function wrap(ctx, text, maxW){
+    const words = text.split(/\s+/), lines = []; let cur = '';
+    for (const w of words){
+      const t = cur ? cur + ' ' + w : w;
+      if (ctx.measureText(t).width > maxW && cur){ lines.push(cur); cur = w; } else cur = t;
+    }
+    if (cur) lines.push(cur); return lines;
+  }
+
+  async function makeImage(kind){
+    try { await document.fonts.load('700 44px Kalam'); await document.fonts.load('44px Kalam'); } catch(e){}
+    const W = 1080, PAD = 110, FS = 46, LH = 76, FONT = FS + 'px Kalam, "Segoe Print", cursive';
+    const probe = document.createElement('canvas').getContext('2d'); probe.font = FONT;
+    const blocks = [...document.querySelectorAll('#letter p')].map(p => ({
+      lines: wrap(probe, p.innerText.trim(), W - PAD * 2), right: p.classList.contains('sign')
+    }));
+    const textH = blocks.reduce((a, b) => a + b.lines.length * LH + 26, 0);
+    const H = PAD + textH + 400;
+    const M = 40, cv = document.createElement('canvas'); cv.width = W + M * 2; cv.height = H + M * 2;
+    const ctx = cv.getContext('2d'), r = rand(11);
+
+    ctx.fillStyle = '#3a2417'; ctx.fillRect(0, 0, cv.width, cv.height);
+    ctx.save(); ctx.translate(M, M);
+
+    // torn edge
+    ctx.beginPath(); const step = 28;
+    const edge = (x, y) => [x + (r() - .5) * 14, y + (r() - .5) * 14];
+    let p;
+    for (let x = 0; x <= W; x += step){ p = edge(x, 0); x ? ctx.lineTo(...p) : ctx.moveTo(...p); }
+    for (let y = 0; y <= H; y += step){ ctx.lineTo(...edge(W, y)); }
+    for (let x = W; x >= 0; x -= step){ ctx.lineTo(...edge(x, H)); }
+    for (let y = H; y >= 0; y -= step){ ctx.lineTo(...edge(0, y)); }
+    ctx.closePath(); ctx.shadowColor = 'rgba(0,0,0,.6)'; ctx.shadowBlur = 30; ctx.fillStyle = '#e6c78c'; ctx.fill();
+    ctx.shadowBlur = 0; ctx.clip();
+
+    let g = ctx.createRadialGradient(W * .3, H * .2, 50, W * .5, H * .5, Math.max(W, H) * .75);
+    g.addColorStop(0, 'rgba(255,245,210,.7)'); g.addColorStop(.55, 'rgba(230,199,140,0)'); g.addColorStop(1, 'rgba(120,65,15,.55)');
+    ctx.fillStyle = g; ctx.fillRect(0, 0, W, H);
+    for (let i = 0; i < 9000; i++){            // paper grain
+      ctx.fillStyle = 'rgba(110,65,20,' + (r() * .09) + ')';
+      ctx.fillRect(r() * W, r() * H, r() * 3 + 1, r() * 3 + 1);
+    }
+    for (let i = 0; i < 9; i++){               // old stains
+      const sx = r() * W, sy = r() * H, sg = ctx.createRadialGradient(sx, sy, 0, sx, sy, 60 + r() * 90);
+      sg.addColorStop(0, 'rgba(130,80,25,.13)'); sg.addColorStop(1, 'rgba(130,80,25,0)');
+      ctx.fillStyle = sg; ctx.fillRect(0, 0, W, H);
+    }
+
+    // letter text
+    ctx.fillStyle = '#35200f'; ctx.font = FONT; ctx.textBaseline = 'alphabetic';
+    let y = PAD + 20;
+    for (const b of blocks){
+      ctx.textAlign = b.right ? 'right' : 'left';
+      for (const ln of b.lines){ ctx.fillText(ln, b.right ? W - PAD : PAD, y); y += LH; }
+      y += 26;
+    }
+
+    // stamp (multiply so the paper shows through)
+    const st = drawStamp(kind);
+    ctx.save(); ctx.translate(W - PAD - 130, Math.max(y + 130, H - 230));
+    ctx.rotate(kind === 'APPROVED' ? -.2 : .17);
+    ctx.globalCompositeOperation = 'multiply'; ctx.globalAlpha = .9;
+    ctx.drawImage(st, -180, -180); ctx.restore();
+
+    ctx.restore();
+    return new Promise(res => cv.toBlob(res, 'image/png'));
+  }
+
+  sendBtn.addEventListener('click', async () => {
+    if (!chosen) return;
+    sendBtn.disabled = true; msg.textContent = 'image ban rahi hai...';
+    try {
+      const blob = await makeImage(chosen);
+      const file = new File([blob], 'chitthi.png', { type: 'image/png' });
+      if (navigator.canShare && navigator.canShare({ files: [file] })){
+        await navigator.share({ files: [file] });          // share sheet me WhatsApp chuno
+        msg.textContent = 'WhatsApp chuno aur bhej do';
+      } else {
+        const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = 'chitthi.png';
+        document.body.appendChild(a); a.click(); a.remove();
+        window.open('https://wa.me/' + PHONE, '_blank');
+        msg.textContent = 'image download ho gayi, WhatsApp me attach karke bhej do';
+      }
+    } catch (e) {
+      if (e && e.name !== 'AbortError') msg.textContent = 'kuch gadbad hui, dobara try karo';
+      else msg.textContent = '';
+    }
+    sendBtn.disabled = false;
+  });
+</script>
+</body>
+</html>
